@@ -1,0 +1,36 @@
+# This workflow will do a clean install of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: deploy to lambda
+on: [push]
+jobs:
+  deploy_source:
+    name: build and deploy lambda
+    strategy:
+      matrix:
+        node-version: [14.x]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: npm install and build
+        run: |
+          npm ci
+          npm run build --if-present
+        env:
+          CI: true
+      - name: zip
+        uses: montudor/action-zip@v0.1.0
+        with:
+          args: zip -qq -r ./bundle.zip ./
+      - name: default deploy
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: us-west-2
+          function_name: vscodeupload
+          zip_file: bundle.zip
