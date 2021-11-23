@@ -38,24 +38,6 @@ exports.handler = async (event, context, callback) => {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // async1.waterfall([
 
   //   // download images.json
